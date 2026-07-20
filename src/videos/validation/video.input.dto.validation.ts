@@ -2,9 +2,10 @@ import { ValidationError } from "../../core/types/validation-error";
 import { VideoInputDto } from "../dto/video.input.dto";
 import { AvailableResolutions } from "../types/video";
 
-const isValidLength = (item: string, maxLength: number) => {
-  return item.length <= maxLength;
-};
+const isInvalidString = (value: unknown, min: number, max: number): boolean =>
+  typeof value !== "string" ||
+  value.trim().length < min ||
+  value.trim().length > max;
 
 export const validateVideoInputDto = (
   data: VideoInputDto,
@@ -18,7 +19,7 @@ export const validateVideoInputDto = (
     });
   }
 
-  if (data.title && !isValidLength(data.title, 40)) {
+  if (data.title && isInvalidString(data.title, 1, 40)) {
     errors.push({
       field: "title",
       message: "Title is too long",
@@ -32,7 +33,7 @@ export const validateVideoInputDto = (
     });
   }
 
-  if (data.author && !isValidLength(data.author, 20)) {
+  if (data.author && isInvalidString(data.author, 1, 20)) {
     errors.push({
       field: "author",
       message: "Author is too long",
