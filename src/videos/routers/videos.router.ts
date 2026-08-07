@@ -4,6 +4,8 @@ import { Video } from "../types/video";
 import { db } from "../../db/in-memory.db";
 import { VideoInputDto } from "../dto/video.input.dto";
 import { VideoUpdateDto } from "../dto/video.update.dto";
+import { validateVideoInputDto } from "../validation/video.input.dto.validation";
+import { validateVideoUpdateDto } from "../validation/video.update.dto.validation";
 
 export const videosRouter = Router({ mergeParams: true });
 
@@ -26,15 +28,21 @@ videosRouter.get(
 
 videosRouter.post(
   "/",
-  (req: Request<{}, Video, { video: VideoInputDto }>, res: Response<Video>) => {
+  (req: Request<{}, Video, VideoInputDto>, res: Response) => {
+    const errors = validateVideoInputDto(req.body);
+    if (errors.length > 0) {
+      res.status(HttpStatus.BadRequest).send({ errorsMessages: errors });
+      return;
+    }
+
     const lastVideo = db.videos[db.videos.length - 1];
     const newVideo: Video = {
       id: lastVideo ? lastVideo.id + 1 : 1,
-      title: req.body.video.title,
-      author: req.body.video.author,
+      title: req.body.title,
+      author: req.body.author,
       canBeDownloaded: false,
       minAgeRestriction: null,
-      availableResolutions: req.body.video.availableResolutions,
+      availableResolutions: req.body.availableResolutions,
       createdAt: new Date().toISOString(),
       publicationDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     };
@@ -47,21 +55,27 @@ videosRouter.post(
 videosRouter.put(
   "/:id",
   (
-    req: Request<{ id: string }, {}, { video: VideoUpdateDto }>,
+    req: Request<{ id: string }, {}, VideoUpdateDto>,
     res: Response,
   ) => {
-    const videoId = db.videos.find(
-      (video) => video.id === Number(req.params.id),
-    );
-    if (!videoId) {
+    const id = Number(req.params.id);
+    const video = db.videos.find((video) => video.id === id);
+    if (!video) {
       res.sendStatus(HttpStatus.NotFound);
       return;
     }
+
+    const errors = validateVideoUpdateDto(req.body);
+    if (errors.length > 0) {
+      res.status(HttpStatus.BadRequest).send({ errorsMessages: errors });
+      return;
+    }
+
     db.videos = db.videos.map((video) => {
-      if (video.id === Number(videoId)) {
+      if (video.id === id) {
         return {
           ...video,
-          ...req.body.video,
+          ...req.body,
         };
       }
       return video;
@@ -71,11 +85,12 @@ videosRouter.put(
 );
 
 videosRouter.delete("/:id", (req: Request<{ id: string }>, res: Response) => {
-  const videoId = db.videos.find((video) => video.id === Number(req.params.id));
-  if (!videoId) {
+  const id = Number(req.params.id);
+  const video = db.videos.find((video) => video.id === id);
+  if (!video) {
     res.sendStatus(HttpStatus.NotFound);
     return;
   }
-  db.videos = db.videos.filter((video) => video.id !== Number(videoId));
+  db.videos = db.videos.filter((video) => video.id !== id);
   res.sendStatus(HttpStatus.NoContent);
 });
