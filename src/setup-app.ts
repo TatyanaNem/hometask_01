@@ -7,11 +7,11 @@ export const setupApp = (app: Express) => {
   app.use(express.json()); // middleware для парсинга JSON в теле запроса
 
   app.get("/", (_req: Request, res: Response) => {
-    res.redirect("/hometask_01/api/videos");
+    res.redirect("/videos");
   });
 
-  app.use("/hometask_01/api/videos", videosRouter);
-  app.use("/hometask_01/api/testing", testingRouter);
+  app.use("/videos", videosRouter);
+  app.use("/testing", testingRouter);
 
   return app;
 };
