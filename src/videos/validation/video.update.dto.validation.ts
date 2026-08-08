@@ -9,8 +9,8 @@ export const validateVideoUpdateDto = (
 
   if (typeof data.canBeDownloaded !== "boolean") {
     errors.push({
-      field: "canBeDownloaded",
       message: "canBeDownloaded must be a boolean",
+      field: "canBeDownloaded",
     });
   }
 
@@ -21,15 +21,20 @@ export const validateVideoUpdateDto = (
       data.minAgeRestriction > 18)
   ) {
     errors.push({
-      field: "minAgeRestriction",
       message: "minAgeRestriction must be null or a number between 1 and 18",
+      field: "minAgeRestriction",
     });
   }
 
-  if (!data.publicationDate || isNaN(Date.parse(data.publicationDate))) {
+  if (typeof data.publicationDate !== "string") {
     errors.push({
+      message: "publicationDate must be a string",
       field: "publicationDate",
+    });
+  } else if (!data.publicationDate || isNaN(Date.parse(data.publicationDate))) {
+    errors.push({
       message: "publicationDate must be a valid date string",
+      field: "publicationDate",
     });
   }
 
