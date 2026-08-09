@@ -8,8 +8,8 @@ import { VideoUpdateDto } from "../src/videos/dto/video.update.dto";
 
 const app = setupApp(express());
 
-const VIDEOS_PATH = "/hometask_01/api/videos";
-const TESTING_PATH = "/hometask_01/api/testing";
+const VIDEOS_PATH = "/videos";
+const TESTING_PATH = "/testing";
 
 const validInputDto: VideoInputDto = {
   title: "Valid title",

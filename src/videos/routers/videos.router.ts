@@ -6,18 +6,18 @@ import { VideoInputDto } from "../dto/video.input.dto";
 import { VideoUpdateDto } from "../dto/video.update.dto";
 import { validateVideoInputDto } from "../validation/video.input.dto.validation";
 import { validateVideoUpdateDto } from "../validation/video.update.dto.validation";
+import { videoRepository } from "../../repositories/videoRepository";
 
 export const videosRouter = Router({ mergeParams: true });
 
 videosRouter.get("/", (req: Request, res: Response<Video[]>) => {
-  res.status(HttpStatus.Ok).send(db.videos);
+  res.status(HttpStatus.Ok).send(videoRepository.getAllVideos());
 });
 
 videosRouter.get(
   "/:id",
   (req: Request<{ id: string }>, res: Response<Video>) => {
-    const id = parseInt(req.params.id);
-    const video = db.videos.find((video) => video.id === id);
+    const video = videoRepository.getVideoById(req.params.id);
     if (!video) {
       res.sendStatus(HttpStatus.NotFound);
       return;
@@ -54,12 +54,8 @@ videosRouter.post(
 
 videosRouter.put(
   "/:id",
-  (
-    req: Request<{ id: string }, {}, VideoUpdateDto>,
-    res: Response,
-  ) => {
-    const id = Number(req.params.id);
-    const video = db.videos.find((video) => video.id === id);
+  (req: Request<{ id: string }, {}, VideoUpdateDto>, res: Response) => {
+    const video = videoRepository.getVideoById(req.params.id);
     if (!video) {
       res.sendStatus(HttpStatus.NotFound);
       return;
@@ -71,26 +67,17 @@ videosRouter.put(
       return;
     }
 
-    db.videos = db.videos.map((video) => {
-      if (video.id === id) {
-        return {
-          ...video,
-          ...req.body,
-        };
-      }
-      return video;
-    });
+    videoRepository.updateVideoById(req.params.id, req.body);
     res.sendStatus(HttpStatus.NoContent);
   },
 );
 
 videosRouter.delete("/:id", (req: Request<{ id: string }>, res: Response) => {
-  const id = Number(req.params.id);
-  const video = db.videos.find((video) => video.id === id);
+  const video = videoRepository.getVideoById(req.params.id);
   if (!video) {
     res.sendStatus(HttpStatus.NotFound);
     return;
   }
-  db.videos = db.videos.filter((video) => video.id !== id);
+  videoRepository.deleteVideoById(req.params.id);
   res.sendStatus(HttpStatus.NoContent);
 });
