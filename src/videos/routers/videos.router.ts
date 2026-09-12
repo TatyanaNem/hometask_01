@@ -7,15 +7,16 @@ import { VideoUpdateDto } from "../dto/video.update.dto";
 import { validateVideoInputDto } from "../validation/video.input.dto.validation";
 import { validateVideoUpdateDto } from "../validation/video.update.dto.validation";
 import { videoRepository } from "../../repositories/videoRepository";
+import { VIDEOS_ROUTES } from "../constants/videos.paths";
 
 export const videosRouter = Router({ mergeParams: true });
 
-videosRouter.get("/", (req: Request, res: Response<Video[]>) => {
+videosRouter.get(VIDEOS_ROUTES.ROOT, (req: Request, res: Response<Video[]>) => {
   res.status(HttpStatus.Ok).send(videoRepository.getAllVideos());
 });
 
 videosRouter.get(
-  "/:id",
+  VIDEOS_ROUTES.BY_ID,
   (req: Request<{ id: string }>, res: Response<Video>) => {
     const video = videoRepository.getVideoById(req.params.id);
     if (!video) {
@@ -27,7 +28,7 @@ videosRouter.get(
 );
 
 videosRouter.post(
-  "/",
+  VIDEOS_ROUTES.ROOT,
   (req: Request<{}, Video, VideoInputDto>, res: Response) => {
     const errors = validateVideoInputDto(req.body);
     if (errors.length > 0) {
@@ -53,7 +54,7 @@ videosRouter.post(
 );
 
 videosRouter.put(
-  "/:id",
+  VIDEOS_ROUTES.BY_ID,
   (req: Request<{ id: string }, {}, VideoUpdateDto>, res: Response) => {
     const video = videoRepository.getVideoById(req.params.id);
     if (!video) {
@@ -72,12 +73,15 @@ videosRouter.put(
   },
 );
 
-videosRouter.delete("/:id", (req: Request<{ id: string }>, res: Response) => {
-  const video = videoRepository.getVideoById(req.params.id);
-  if (!video) {
-    res.sendStatus(HttpStatus.NotFound);
-    return;
-  }
-  videoRepository.deleteVideoById(req.params.id);
-  res.sendStatus(HttpStatus.NoContent);
-});
+videosRouter.delete(
+  VIDEOS_ROUTES.BY_ID,
+  (req: Request<{ id: string }>, res: Response) => {
+    const video = videoRepository.getVideoById(req.params.id);
+    if (!video) {
+      res.sendStatus(HttpStatus.NotFound);
+      return;
+    }
+    videoRepository.deleteVideoById(req.params.id);
+    res.sendStatus(HttpStatus.NoContent);
+  },
+);
